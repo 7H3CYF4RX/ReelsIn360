@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Video Review — Reels in 360</title>
+  <meta name="description" content="Review your video from Reels in 360 and approve or request revisions."/>
+  <link rel="stylesheet" href="/css/main.css"/>
+  <style>
+    body { background: linear-gradient(135deg, #f0faf5 0%, #e8f5ee 50%, white 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 40px 20px; }
+    .review-container { max-width: 720px; width: 100%; margin-bottom: 40px; }
+    .review-header { text-align: center; margin-bottom: 32px; }
+    .review-header .logo { width: 64px; height: 64px; background: #1B6B45; border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 4px 20px rgba(27,107,69,0.25); }
+    .review-header .logo svg { width: 38px; height: 38px; }
+    .review-header h1 { font-size: 26px; font-weight: 800; color: #0f1f18; }
+    .review-header p { color: #8aa398; margin-top: 6px; }
+    .video-box { background: #000; border-radius: 16px; overflow: hidden; margin-bottom: 24px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; border: 1px solid #e5ebe8; }
+    video { width: 100%; height: 100%; object-fit: contain; }
+    .revision-info { background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.2); border-radius: 12px; padding: 14px; margin-bottom: 20px; }
+    .action-box { display: flex; gap: 16px; margin-bottom: 24px; }
+    .action-box .btn { flex: 1; padding: 14px; font-size: 15px; justify-content: center; }
+    .feedback-box { margin-top: 16px; margin-bottom: 24px; display: none; }
+    .status-banner { padding: 20px; text-align: center; border-radius: 14px; margin-bottom: 20px; }
+    .status-banner.approved { background: rgba(27,107,69,0.08); border: 1px solid rgba(27,107,69,0.2); }
+    .status-banner.revision { background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.2); }
+    .card { background: white; border: 1px solid #e5ebe8; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .video-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px; -webkit-overflow-scrolling: touch; }
+    .video-tab-btn { background: white; border: 1px solid #e5ebe8; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-secondary); cursor: pointer; white-space: nowrap; transition: all 0.18s; outline: none; }
+    .video-tab-btn.active { background: var(--green-primary); color: white; border-color: var(--green-primary); box-shadow: 0 2px 6px rgba(27,107,69,0.2); }
+  </style>
+</head>
+<body>
+<div class="review-container">
+  <div class="review-header">
+    <img src="/images/logo-text.png" alt="Reels in 360" style="max-height: 52px; display: block; margin: 0 auto 16px; object-fit: contain;"/>
+    <p>Your video is ready for review</p>
+  </div>
+
+  <div id="review-content">
+    <div class="loading-center"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+function toast(msg, type = 'info') {
+  const icons = {
+    success: `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+    error: `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    info: `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
+  };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+const token = new URLSearchParams(window.location.search).get('token');
+let currentVideos = [];
+
+function switchVideo(idx) {
+  const video = currentVideos[idx];
+  if (!video) return;
+
+  const player = document.getElementById('review-player');
+  const filenameSpan = document.getElementById('current-video-filename');
+
+  if (player) {
+    player.pause();
+    player.src = `/uploads/${video.filepath.split('/uploads/').pop()}`;
+    player.load();
+    player.play().catch(e => console.log('Playback interrupted or blocked:', e));
+  }
+  if (filenameSpan) filenameSpan.textContent = video.filename || 'Untitled';
+
+  const tabs = document.querySelectorAll('.video-tab-btn');
+  tabs.forEach((tab, tIdx) => {
+    if (tIdx === idx) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+}
+
+async function load() {
+  const container = document.getElementById('review-content');
+  if (!token) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red-500)"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <p>Invalid review link</p>
+      </div>`;
+    return;
+  }
+  try {
+    const res = await fetch(`/api/client/review/${token}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    const { approval, project, videos, remaining_revisions } = data.data;
+    currentVideos = videos || [];
+
+    const latestVideo = currentVideos[0];
+    const isApproved = approval.status === 'approved';
+    const isRevision = approval.status === 'revision_requested';
+
+    container.innerHTML = `
+      ${isApproved ? `
+        <div class="status-banner approved">
+          <div style="display:flex;justify-content:center;margin-bottom:8px">
+            <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:var(--green-500)"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div style="font-size:18px;font-weight:700">Video Approved!</div>
+          <div style="color:var(--text-muted);margin-top:4px">Thank you for reviewing.</div>
+        </div>` : ''}
+      ${isRevision ? `
+        <div class="status-banner revision">
+          <div style="display:flex;justify-content:center;margin-bottom:8px">
+            <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:var(--yellow-500)"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </div>
+          <div style="font-size:18px;font-weight:700">Revision Requested</div>
+          <div style="color:var(--text-muted);margin-top:4px">${remaining_revisions} revision(s) remaining</div>
+        </div>` : ''}
+
+      <div class="card" style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:12px;color:var(--purple-400);font-weight:700">${project.project_id}</div>
+            <div style="font-size:18px;font-weight:700">${project.client_name}</div>
+            <div style="color:var(--text-muted)">${project.business_name || ''} · ${project.package || ''}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="text-sm text-muted">Reels</div>
+            <div style="font-size:22px;font-weight:800">${project.reels_count}</div>
+          </div>
+        </div>
+      </div>
+
+      ${latestVideo ? `
+        <div class="video-section">
+          ${currentVideos.length > 1 ? `
+            <div class="video-tabs">
+              ${currentVideos.map((vid, idx) => `
+                <button class="video-tab-btn ${idx === 0 ? 'active' : ''}" onclick="switchVideo(${idx})" id="tab-btn-${idx}">
+                  Video ${idx + 1}
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
+          <div class="video-box">
+            <video id="review-player" src="/uploads/${latestVideo.filepath.split('/uploads/').pop()}" controls>
+              Your browser does not support video playback.
+            </video>
+          </div>
+          <div id="current-video-title" style="font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; word-break: break-all; background: #eaeeeb; padding: 10px 14px; border-radius: 10px; display: flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span style="font-weight: 600;">File:</span> <span id="current-video-filename">${latestVideo.filename || 'Untitled'}</span>
+          </div>
+        </div>` : `
+        <div class="card" style="text-align:center;padding:40px;margin-bottom:20px;border:1px dashed var(--border)">
+          <div style="display:flex;justify-content:center;margin-bottom:12px;opacity:0.3">
+            <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+          </div>
+          <div style="color:var(--text-muted)">Video will appear here when uploaded by editor</div>
+        </div>`}
+
+      ${!isApproved ? `
+        <div class="revision-info" style="display:flex;align-items:center;gap:6px">
+          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:var(--yellow-600)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span style="color:var(--yellow-600);font-weight:700">${approval.max_revisions} Revision(s) allowed</span>
+          <span style="color:var(--text-muted);font-size:13px">· ${remaining_revisions} remaining</span>
+        </div>
+
+        <div class="action-box">
+          <button class="btn btn-success" onclick="approveVideo()" style="background-color:var(--green-primary);box-shadow:0 2px 8px rgba(27,107,69,0.2)">Approve Video</button>
+          <button class="btn btn-warning" onclick="toggleRevision()" ${remaining_revisions <= 0 ? 'disabled title="No revisions left"' : ''}>Request Revision</button>
+        </div>
+
+        <div class="feedback-box card" id="feedback-box">
+          <div class="form-label">Revision Feedback *</div>
+          <textarea id="feedback-text" class="form-control" placeholder="Please describe what changes you need..." rows="4"></textarea>
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button class="btn btn-secondary" onclick="toggleRevision()">Cancel</button>
+            <button class="btn btn-warning" onclick="submitRevision()">Submit Revision Request</button>
+          </div>
+        </div>` : ''}`;
+  } catch (err) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" width="36" height="36" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red-500)"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <p>${err.message}</p>
+      </div>`;
+  }
+}
+
+function toggleRevision() {
+  const box = document.getElementById('feedback-box');
+  if (box) box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+async function approveVideo() {
+  if (!confirm('Approve this video? The project will be marked as Delivered.')) return;
+  try {
+    const res = await fetch(`/api/client/review/${token}/approve`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    toast('Video approved! Thank you!', 'success');
+    setTimeout(load, 1500);
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+async function submitRevision() {
+  const feedback = document.getElementById('feedback-text')?.value.trim();
+  if (!feedback) { toast('Please describe the changes needed', 'error'); return; }
+  try {
+    const res = await fetch(`/api/client/review/${token}/revision`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    toast(data.message, 'success');
+    setTimeout(load, 1500);
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+// Pause playback if the user switches browser tabs or minimizes the window
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    const player = document.getElementById('review-player');
+    if (player) player.pause();
+  }
+});
+
+// Ensure only one video element on the page can play at a time (if multiple exist)
+document.addEventListener('play', (e) => {
+  const players = document.querySelectorAll('video');
+  players.forEach(p => {
+    if (p !== e.target) p.pause();
+  });
+}, true);
+
+load();
+</script>
+</body>
+</html>

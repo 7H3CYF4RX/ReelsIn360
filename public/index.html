@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reels in 360 — CRM & Operations</title>
+  <meta name="description" content="Production CRM and operations management platform for Reels in 360."/>
+  <link rel="stylesheet" href="/css/main.css"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#1B6B45"/>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="login-page" class="login-page" style="display:none">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-big">
+        <img src="/images/logo-card.png" alt="Reels in 360 Logo"/>
+      </div>
+      <h1>Reels in 360</h1>
+      <p>Production CRM &amp; Operations</p>
+    </div>
+    <form id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input id="login-email" type="email" class="form-control" placeholder="you@reels360.in" required/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="password-input-wrapper" style="position: relative;">
+          <input id="login-password" type="password" class="form-control" placeholder="••••••••" style="padding-right: 40px;" required/>
+          <button type="button" id="toggle-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; padding: 0; outline: none;" title="Show Password">
+            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="login-error" style="color:#dc2626;font-size:13px;margin-bottom:12px;display:none;background:#fef2f2;padding:8px 12px;border-radius:8px;border:1px solid #fecaca"></div>
+      <div style="display: flex; justify-content: center; margin-top: 20px;">
+        <button type="submit" class="btn btn-primary" id="login-btn" style="min-width: 140px; justify-content: center; padding: 10px 24px;">
+          <span id="login-btn-text">Sign In</span>
+        </button>
+      </div>
+    </form>
+    <p class="text-center text-sm text-muted mt-4">Reels in 360 &copy; 2026</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">
+        <img src="/images/logo-text.png" alt="Reels in 360"/>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <a class="nav-item" data-page="dashboard" href="#dashboard">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-4"/></svg>
+        </span> Dashboard
+      </a>
+
+      <div class="nav-section-label" id="nav-sales-label">Sales</div>
+      <a class="nav-item" data-page="leads" href="#leads" id="nav-leads">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </span> Lead Management
+      </a>
+      <a class="nav-item" data-page="projects" href="#projects" id="nav-projects">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/></svg>
+        </span> Projects
+      </a>
+
+      <div class="nav-section-label" id="nav-ops-label">Operations</div>
+      <a class="nav-item" data-page="operations" href="#operations" id="nav-operations">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        </span> Operations
+      </a>
+      <a class="nav-item" data-page="shooter" href="#shooter" id="nav-shooter">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+        </span> Shooter App
+      </a>
+      <a class="nav-item" data-page="editing" href="#editing" id="nav-editing">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        </span> Editing
+      </a>
+      <a class="nav-item" data-page="delivery" href="#delivery" id="nav-delivery">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </span> Delivery
+      </a>
+      <div class="nav-section-label" id="nav-admin-label">Admin</div>
+      <a class="nav-item" data-page="users" href="#users" id="nav-users">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span> User Management
+      </a>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebar-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Loading...</div>
+        <div class="user-role" id="sidebar-role">—</div>
+      </div>
+      <button class="logout-btn" id="logout-btn" title="Logout">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main">
+    <header class="topbar">
+      <button id="sidebar-toggle" style="background:none;border:none;color:var(--text-secondary);font-size:20px;cursor:pointer;padding:4px;display:none">☰</button>
+      <div>
+        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-subtitle" id="page-subtitle">Welcome back</div>
+      </div>
+      <div class="topbar-actions" id="topbar-actions"></div>
+    </header>
+    <div class="content" id="content">
+      <div class="loading-center"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Modal Container -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Modal</div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<script src="/js/app.js"></script>
+<script src="/js/leads.js"></script>
+<script src="/js/projects.js"></script>
+<script src="/js/shooter_editing.js"></script>
+<script src="/js/delivery.js"></script>
+<script src="/js/users.js"></script>
+</body>
+</html>

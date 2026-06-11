@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Invoice - Reels in 360</title>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" />
+  <style>
+    :root {
+      --green-primary: #1B6B45;
+      --green-dark: #145236;
+      --text-primary: #121b16;
+      --text-secondary: #405047;
+      --text-muted: #80968a;
+      --border: #eaeeeb;
+      --bg-light: #f8faf9;
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-primary);
+      line-height: 1.5;
+      padding: 40px 20px;
+    }
+
+    .no-print-bar {
+      max-width: 800px;
+      margin: 0 auto 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--green-primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13.5px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--green-dark);
+    }
+
+    .btn-secondary {
+      background: white;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-light);
+    }
+
+    .invoice-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+      position: relative;
+    }
+
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 32px;
+      margin-bottom: 32px;
+    }
+
+    .logo-container {
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .logo-container img {
+      display: block;
+      height: 160px;
+      width: 160px;
+      margin-top: -50px;
+      margin-bottom: -50px;
+      margin-left: -25px;
+      object-fit: contain;
+    }
+
+    .company-details {
+      text-align: right;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .company-name {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--green-primary);
+      margin-bottom: 4px;
+    }
+
+    .invoice-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .meta-block h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .meta-block p {
+      font-size: 14.5px;
+      color: var(--text-secondary);
+    }
+
+    .meta-block strong {
+      font-size: 16px;
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+
+    .invoice-title-section {
+      text-align: right;
+    }
+
+    .invoice-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+
+    .invoice-number {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--green-primary);
+      margin-top: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-paid {
+      background: rgba(22, 163, 74, 0.1);
+      color: #15803d;
+    }
+
+    .badge-pending {
+      background: rgba(217, 119, 6, 0.1);
+      color: #b45309;
+    }
+
+    .badge-overdue {
+      background: rgba(220, 38, 38, 0.1);
+      color: #b91c1c;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 40px 0;
+    }
+
+    th {
+      background: var(--bg-light);
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 20px 16px;
+      font-size: 14.5px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    td.amount-col {
+      text-align: right;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    th.amount-col {
+      text-align: right;
+    }
+
+    .totals-section {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 40px;
+    }
+
+    .totals-table {
+      width: 280px;
+    }
+
+    .totals-table tr td {
+      padding: 10px 16px;
+      border: none;
+    }
+
+    .totals-table tr.grand-total td {
+      border-top: 2px solid var(--green-primary);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--green-primary);
+      padding-top: 16px;
+    }
+
+    .totals-table tr td.total-label {
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    .totals-table tr td.total-val {
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .invoice-footer {
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12.5px;
+    }
+
+    .invoice-footer p {
+      margin-bottom: 6px;
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      color: var(--text-muted);
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media print {
+      @page {
+        size: auto;
+        margin: 0;
+      }
+
+      body {
+        background: white !important;
+        padding: 20mm !important;
+        color: black !important;
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      ::selection {
+        background: transparent !important;
+        color: inherit !important;
+      }
+
+      ::-moz-selection {
+        background: transparent !important;
+        color: inherit !important;
+      }
+
+      .no-print-bar {
+        display: none !important;
+      }
+
+      .invoice-container {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="no-print-bar" id="print-bar" style="display:none">
+    <button class="btn btn-secondary" onclick="window.close()">← Close Window</button>
+    <button class="btn" onclick="window.print()">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none"
+        stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px">
+        <polyline points="6 9 6 2 18 2 18 9" />
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+        <rect x="6" y="14" width="12" height="8" />
+      </svg>
+      Print / Save as PDF
+    </button>
+  </div>
+
+  <div class="invoice-container" id="invoice-content">
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading invoice details...</p>
+    </div>
+  </div>
+
+  <script>
+    function fmtDate(d) {
+      return d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
+    }
+    function fmtCurrency(n) {
+      return '₹' + Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    window.addEventListener('load', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const invoiceId = urlParams.get('id');
+      const token = localStorage.getItem('r360_token');
+
+      if (!invoiceId) {
+        document.getElementById('invoice-content').innerHTML = `
+          <div style="text-align:center;padding:40px;color:var(--text-secondary)">
+            <h2>Invalid Invoice ID</h2>
+            <p style="margin-top:10px">No invoice parameter found in the URL query string.</p>
+          </div>`;
+        return;
+      }
+
+      if (!token) {
+        document.getElementById('invoice-content').innerHTML = `
+          <div style="text-align:center;padding:40px;color:var(--text-secondary)">
+            <h2>Access Denied</h2>
+            <p style="margin-top:10px">You must be logged in as an administrator to view this invoice.</p>
+          </div>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/delivery/invoices/${invoiceId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || 'Failed to load invoice');
+        const inv = data.data;
+
+        document.getElementById('print-bar').style.display = 'flex';
+
+        let statusBadgeClass = 'badge-pending';
+        if (inv.status === 'paid') statusBadgeClass = 'badge-paid';
+        if (inv.status === 'overdue') statusBadgeClass = 'badge-overdue';
+
+        document.getElementById('invoice-content').innerHTML = `
+          <div class="invoice-header">
+            <div class="logo-container">
+              <img src="/images/logo-text.png" alt="Reels in 360 Logo"/>
+            </div>
+            <div class="company-details">
+              <div class="company-name">Reels in 360</div>
+              <p>Creative Production Studio</p>
+              <p>Palakkad, Kerala, India</p>
+              <p>contact@reels360.in</p>
+              <p>www.reels360.in</p>
+            </div>
+          </div>
+
+          <div class="invoice-meta">
+            <div class="meta-block">
+              <h3>Billed To</h3>
+              <p><strong>${inv.client_name}</strong></p>
+              ${inv.business_name ? `<p style="font-weight:500;color:var(--text-secondary)">${inv.business_name}</p>` : ''}
+              ${inv.phone ? `<p>${inv.phone}</p>` : ''}
+              ${inv.email ? `<p>${inv.email}</p>` : ''}
+            </div>
+            <div class="invoice-title-section">
+              <h1 class="invoice-title">INVOICE</h1>
+              <div class="invoice-number">${inv.invoice_number}</div>
+              <div style="margin-top: 12px">
+                <span class="badge ${statusBadgeClass}">${inv.status}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="invoice-meta" style="margin-bottom: 24px">
+            <div class="meta-block">
+              <h3>Invoice Date</h3>
+              <p>${fmtDate(inv.created_at)}</p>
+            </div>
+            <div class="meta-block" style="text-align: right">
+              <h3>Payment Due</h3>
+              <p><strong>${fmtDate(inv.due_date)}</strong></p>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th style="text-align: center; width: 80px">Qty</th>
+                <th class="amount-col" style="width: 140px">Rate</th>
+                <th class="amount-col" style="width: 140px">Line Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong style="color: var(--text-primary); font-size: 15px">${inv.package || 'Production Package'}</strong>
+                  <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 4px">Reels & post-production delivery pipeline for project ${inv.project_id}</p>
+                </td>
+                <td style="text-align: center">1</td>
+                <td class="amount-col">${fmtCurrency(inv.amount)}</td>
+                <td class="amount-col">${fmtCurrency(inv.amount)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="totals-section">
+            <table class="totals-table">
+              <tr>
+                <td class="total-label">Subtotal</td>
+                <td class="total-val">${fmtCurrency(inv.amount)}</td>
+              </tr>
+              <tr>
+                <td class="total-label">Tax (0%)</td>
+                <td class="total-val">${fmtCurrency(0)}</td>
+              </tr>
+              <tr class="grand-total">
+                <td class="total-label" style="color: var(--green-primary)">Total Due</td>
+                <td class="total-val">${fmtCurrency(inv.amount)}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="invoice-footer">
+            <p>Thank you for choosing Reels in 360 for your brand's digital production!</p>
+            <p style="color: var(--text-muted); font-size: 11px">For payment details or support, contact contact@reels360.in</p>
+          </div>`;
+
+      } catch (err) {
+        document.getElementById('invoice-content').innerHTML = `
+          <div style="text-align:center;padding:40px;color:var(--text-secondary)">
+            <h2>Error Loading Invoice</h2>
+            <p style="margin-top:10px;color:var(--red-500)">${err.message}</p>
+          </div>`;
+      }
+    });
+  </script>
+</body>
+
+</html>
